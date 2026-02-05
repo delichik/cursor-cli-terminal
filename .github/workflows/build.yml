@@ -19,21 +19,36 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
         gradle-version: '8.2'
         
     - name: Generate Gradle Wrapper if missing
       if: hashFiles('gradlew') == ''
       run: |
-        gradle wrapper --gradle-version 8.2
+        gradle wrapper --gradle-version 8.2 --distribution-type all
         
     - name: Grant execute permission for gradlew
+      if: hashFiles('gradlew') != ''
       run: chmod +x gradlew
       
     - name: Build plugin
-      run: ./gradlew buildPlugin
+      run: |
+        if [ -f "./gradlew" ]; then
+          ./gradlew buildPlugin
+        else
+          gradle buildPlugin
+        fi
       
     - name: Verify plugin
-      run: ./gradlew verifyPlugin
+      run: |
+        if [ -f "./gradlew" ]; then
+          ./gradlew verifyPlugin
+        else
+          gradle verifyPlugin
+        fi
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
